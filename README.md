@@ -1,2 +1,2 @@
 # jaamarks_notebooks
-Collection of various tasks and procedures.
+Jupyter notebooks of Jesse Marks.
