@@ -1,0 +1,33 @@
+j=0
+for i in /cygdrive/c/Users/jmarks/rcdcollaboration01.rti.ns/gxg/Analysis/META/1df/044.eur13cohorts.afr.9cohorts.eagle_lung.jhs_aric.1000G_p3_markerName_FinalDatasetDNMT3Bpaper/cogend+copdgene+decode+eagle+sage+uw-tturc+gain+nongain+yale-penn+ntr+finnish+aand+jhs+dental_caries+cogend2.afr+eur.chr{1..22}.1df; do
+let j++ 
+perl extract_rows.pl \
+--source $i \
+--id_list SNP_ids.txt \
+--out 044-Cross/chr$j.overlap.txt \
+--header 1 \
+--id_column 0
+done
+
+j=0
+for i in /cygdrive/c/Users/jmarks/rcdcollaboration01.rti.ns/gxg/Analysis/META/1df/045.eur13cohorts.eagle_lung.jhs_aric.1000G_p3_markerName_FinalDatasetDNMT3Bpaper/cogend+copdgene+decode+eagle+sage+uw-tturc+gain+nongain+yale-penn+ntr+finnish+dental_caries+cogend2.eur.chr{1..22}.exclude_singletons.1df; do
+let j++ 
+perl extract_rows.pl \
+--source $i \
+--id_list SNP_ids.txt \
+--out 045Eur/$j.overlap.txt \
+--header 1 \
+--id_column 0
+done
+
+
+j=0
+for i in /cygdrive/c/Users/jmarks/rcdcollaboration01.rti.ns/gxg/Analysis/META/1df/046.afr.9cohorts.eagle_lung.jhs_aric.1000G_p3_markerName_FinalDatasetDNMT3Bpaper/cogend+copdgene+sage+uw-tturc+gain+yale-penn+aand+jhs+cogend2.afr.chr{1..22}.exclude_singletons.1df; do
+let j++ 
+perl extract_rows.pl \
+--source $i \
+--id_list SNP_ids.txt \
+--out 046Afr/chr$j.overlap.txt \
+--header 1 \
+--id_column 0
+done
