@@ -2,13 +2,19 @@
 def main():
     """
     Carryout all the functions necessary to 
-    perform the fwGWAS naive method.
+    perform the fwGWAS naive method. Please
+    there are simply for variables to 
     """
     ### Variables to alter
-    data_dir = '/share/storage/Johnson/fwGWAS/data/SCZ/SCZ2/'
-    rtvf_in = data_dir + 'daner_PGC_SCZ49.sh2_mds10_1000G-frq_2.gz'
-    processing_dir = '/share/storage/Johnson/fwGWAS/method_comp/fwGWAS_SCZ2_Test5/'
-    rtvf_out = processing_dir + 'scz2-gw.vcf'
+################################################################################
+    # path to directory containing the GWAS results (should end with a forward slash)
+    data_dir = ''
+    # name of the GWAS results file in the directory above
+    rtvf_in = data_dir + '.gz'
+    # path to directory data processing performed (should end with a forward slash)
+    processing_dir = ''
+    # name of the initial VCF file to be created (note the extension)
+    rtvf_out = processing_dir + '.vcf'
     
     ### DO NOT alter below this line
     ################################################################################
