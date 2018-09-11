@@ -1,0 +1,22 @@
+Author: Jesse Marks
+Date: September 11, 2018
+
+This directory contains 3 files: 
+1. a methods file
+2. a run-meth file
+3. and a jupyter notebook of the methods file
+
+The methods file is a pipeline developed to run the
+naive method for fwGWAS. The pipeline is a python 
+script that is automated to run the naive method
+from start to finish by simply adjusting a few
+parameters (paths, filenames). This script was written 
+with reusability in mind. Specifically, we have
+modularized the code into 7 functions that can be used
+as standalone functions.
+
+The run_methods file is simply a short bash script to 
+submit the methods file pipeline to the job scheduler.
+
+The jupyter notebook also contains the pipeline constituent
+functions, only with a bit more annotation and comments.
