@@ -1,8 +1,6 @@
 ### python ###
 import itertools, os
 
-#os.chdir("/Users/jmarks/OneDrive - Research Triangle Institute/Projects/heroin/ngc/uhs4/phenotype")
-#print(os.getcwd())
 
 base_dir = "/Users/jmarks/OneDrive - Research Triangle Institute/Projects/heroin/ngc/uhs4/phenotype"
 date = "20190313"
