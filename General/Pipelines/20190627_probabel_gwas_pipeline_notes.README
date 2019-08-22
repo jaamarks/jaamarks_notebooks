@@ -1,0 +1,91 @@
+This is an automated pipeline for preparing the genotype data for a GWAS using the ProbABEL tool. The steps in this pipeline are:
+
+1. Merge chrX
+    * The chrX imputed data from the Michigan Imputation Server is split between males and females. We need to merge these data for the GWAS because the other data is not split by sex. We control for that with a sex covariate.
+2. Convert imputed data format
+    * The ProbABEL software requires the data to be formatted differently than the VCF format that is the output from MIS. In particular, we need to convert the VCF files (dosage) to MaCH format.
+3. Prune imputed data
+    * Prune the imputed data to only the subjects with phenotype data
+4. Reorder phenotype file 
+    * order the subjects in phenotype file to be the same order as the genotype data (takes less memory to reorder the phenotype file rather than all of the genotype files)
+5. Create legend file
+6. Reformat info file
+
+<br>
+<br>
+
+**Note1:** that the genomic data need to be inflated after they have been download from the Michigan Imputation Server.
+
+**Note2:** this pipeline will perform the actual GWAS (1df and 2df) as well. For the 2df analysis, you might have to adjust the `interaction` parameter in the ProbABEL command. The number you provide should be the number of columns to the right of the phenotype variable that the interaction variable is in your phenotype file. For example, the interaction variable is currently coded as 2 in this pipeline for the 2df GWAS. It is coded as a 2 because we are wanting to perform a GxSex analysis for the 2df GWAS and the sex variable `gender` is two columns to the right of the phenotype variable `hiv` in the phenotype file.
+
+```
+iid hiv age gender PC10 PC9 PC2 PC6
+109@1064714572_109@1064714572 0 26 1 0.0011 0.0075 0.0039 -3e-04
+202@1064714531_202@1064714531 0 27 0 0.0093 -0.0112 0.0023 0.0017
+312@1064714548_312@1064714548 0 34 1 -0.0012 -0.0012 4e-04 0.0173
+378@1064610814_378@1064610814 0 30 1 0.0113 0.0016 0.0026 0.0043
+```
+
+**Note3:** pay close attention to the variables above the double octothorpe line. Be sure to edit them accordingly, like for example the `ancestry, covars` and the `phenotype_file` variables. The `s3_upload` variable should be changed per study as well.
+
+**Note4:** we recommend running the first set of functions first, and then when they finish go on to set number two. This is because the first set of functions do not require as much memory as the second set of functions. For the first set of functions, use a smaller compute node (e.g. the m5.large) and then use a memory intensive compute node (e.g. x1e.2xlarge).
+
+**Note5:** compute the chromosomes in batches. For ProbABEL to run, one needs to decompress the chromosomes. This can create storage issues; chromosomes 2 decompressed for the UHS1234 AA group is 92GB! It is therefore advised to process just a few chromosomes at a time so as not to run into storage issues. 
+
+####################################################################################################
+####################################################################################################
+## How to run pipeline
+**Note on performing the GWAS:**
+```
+The ProbABEL software requires the genotype data to be decompressed so that it requires a lot of storage. For this reason, it is best to run only portions of the genome at a time. An advisable way to run the pipeline above is as follows:
+
+1. Convert all of the genetic data to the correct format by running the functions:
+    -merge_chrx  
+    -convert_chrx 
+    -convert_auto 
+    -create_legend 
+    -format_info
+   
+        Comment out the functions:
+            -prune_geno
+            -gwas_1df          
+            -gwas_2df
+            -status_check 
+            
+2. Prune the genotype data to match the phenotype file with:
+    -prune_geno
+    
+        Comment out the functions:
+            -merge_chrx  
+            -convert_chrx 
+            -convert_auto 
+            -create_legend 
+            -format_info
+            -gwas_1df          
+            -gwas_2df
+            -status_check 
+            
+3. Perform the 1df & 2df GWAS and then gzip the genotype data afterwards:
+    -gwas_1df          
+    -gwas_2df
+    -status_check 
+            
+        Comment out the functions:
+            -merge_chrx  
+            -convert_chrx 
+            -convert_auto 
+            -create_legend 
+            -format_info
+            -prune_geno
+```
+
+Perform step 1 for all of the chromosomes. Then perform step 2 & 3 with just a couple or three chromosomes at a time. For step 1 and 2, use a smaller (and less expensive) compute node like the m5.large. When performing (3)ΓÇöthe ProbABEL 1df & 2df GWASΓÇöone will have to use a compute node with very large memory (e.g. x1e.2xlarge). See below for example of how much memory just one chromosome is using for a 1df GWAS.
+
+```
+HOSTNAME                ARCH         NCPU NSOC NCOR NTHR  LOAD  MEMTOT  MEMUSE  SWAPTO  SWAPUS
+----------------------------------------------------------------------------------------------
+ip-172-31-22-183        lx-amd64        8    1    4    8  1.24  240.1G  211.4G     0.0     0.0
+```
+
+####################################################################################################
+
