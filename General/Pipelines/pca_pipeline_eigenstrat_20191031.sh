@@ -1,18 +1,18 @@
 #!/bin/bash
 
 ## Set global variables ##
-anlist="ea" # "ea", "aa", or "ea aa"
-study="vidus"
-case_control="false"  # true if (case control phenotype) false if (not)
-procD="/shared/jmarks/hiv/vidus/troubleshooting"  # processing directory
+anlist="aa ea" # "ea", "aa", or "ea aa"
+study="wihs3"
+procD="/shared/jmarks/hiv/wihs3/phenotype/processing"  # phenotype processing directory
 eig="$procD/eig" # do not alter
 mkdir -p $eig/results # do not alter
 
 
 ## Genotype Data should be in the directory $eig
-## The genotype data names should be of the form: $study.$an.genotype.{bed,bim,fam}. For Example:
-## vidus.ea.genotype.bim, vidus.ea.genotype.bed, vidus.ea.genotype.fam
+## The genotype data names should be of the form: ${study}_${an}_genotype.{bed,bim,fam}. For Example:
+## wihs3_aa_genotypes.bed, wihs3_aa_genotypes.bim, wihs3_aa_genotypes.fam
 
+## The FAM file should have case control information in column 6 if applicable
 
 # Do not edit below this line
 ################################################################################
@@ -21,15 +21,15 @@ mkdir -p $eig/results # do not alter
 ## Remove high-LD region variants ##
 for an in $anlist; do
     perl -lane 'if (($F[0]==5 && $F[3] >= 43964243 && $F[3] <= 51464243) || ($F[0]==6 && $F[3] >= 24892021 && $F[3] <= 33392022) || ($F[0]==8 && $F[3] >= 7962590 && $F[3] <= 11962591) || ($F[0]==11 && $F[3] >= 45043424 && $F[3] <= 57243424)) { print $F[1]."\n"; }' \
-        $eig/$study.$an.genotypes.bim > $eig/$study.$an.genotypes.high_ld_regions.remove
+        $eig/${study}_${an}_genotypes.bim > $eig/${study}_${an}_genotypes_high_ld_regions.remove
 
     # Remove SNPs in known high-LD regions
     /shared/bioinformatics/software/third_party/plink-1.90-beta-4.10-x86_64/plink \
         --noweb \
-        --bfile $eig/$study.$an.genotypes \
-        --exclude $eig/$study.$an.genotypes.high_ld_regions.remove \
+        --bfile $eig/${study}_${an}_genotypes \
+        --exclude $eig/${study}_${an}_genotypes_high_ld_regions.remove \
         --make-bed \
-        --out $eig/$study.$an.genotypes.high_ld_regions_removed
+        --out $eig/${study}_${an}_genotypes_high_ld_regions_removed
 done
 
 ## Linkage disequilibrium pruning ##
@@ -38,7 +38,7 @@ for an in $anlist;do
         /shared/bioinformatics/software/third_party/plink-1.90-beta-4.10-x86_64/plink \
             --noweb \
             --memory 3000 \
-            --bfile $eig/$study.$an.genotypes.high_ld_regions_removed \
+            --bfile $eig/${study}_${an}_genotypes_high_ld_regions_removed \
             --indep-pairwise 1500 150 0.2 \
             --chr ${chr} \
             --out $eig/${an}_chr${chr}_ld_pruned
@@ -52,10 +52,10 @@ for an in $anlist; do
     # Create new PLINK filesets with only lD pruned variants
     /shared/bioinformatics/software/third_party/plink-1.90-beta-4.10-x86_64/plink \
         --noweb \
-        --bfile $eig/$study.$an.genotypes.high_ld_regions_removed \
+        --bfile $eig/${study}_${an}_genotypes_high_ld_regions_removed \
         --extract $eig/${an}_chr_all_ld_pruned.prune.in \
         --make-bed \
-        --out $eig/$study.$an.genotypes.ld_pruned
+        --out $eig/${study}_${an}_genotypes_ld_pruned
 done
 
 # Clean up
@@ -68,39 +68,19 @@ rm $eig/*nosex
 ## Rename BIM/FAM file IDs ##
 for an in $anlist;do
     # Rename FAM file IDs
-    awk '{$1="ID_"NR; $2="ID_"NR; print $0}' $eig/$study.$an.genotypes.ld_pruned.fam \
-        > $eig/$study.$an.genotypes.ld_pruned_renamed.fam
+    awk '{$1="ID_"NR; $2="ID_"NR; print $0}' $eig/${study}_${an}_genotypes_ld_pruned.fam \
+        > $eig/${study}_${an}_genotypes_ld_pruned_renamed.fam
 
     ## Rename BIM file IDs ##
-    awk '{$2="ID_"NR; print $0}' $eig/$study.$an.genotypes.ld_pruned.bim \
-        > $eig/$study.$an.genotypes.ld_pruned_renamed.bim
+    awk '{$2="ID_"NR; print $0}' $eig/${study}_${an}_genotypes_ld_pruned.bim \
+        > $eig/${study}_${an}_genotypes_ld_pruned_renamed.bim
 done
-
-## Assign Case/Control to FAM file if applicable ##
-if [ $case_control == "true" ]; then
-    for an in $anlist; do
-        pfile=$procD/$study_${an}_phenotype_for_pca.txt
-
-        ## extract the IDs of controls
-        tail -n +2 $pfile |\
-            awk '{ if ($2==0) {print $1}}' > $eig/$an.controls.ids
-
-        # Modify FAM file to include case/control status
-        awk 'NR==FNR{map[$1] = $1; next} {if($2 in map) {$6=1} else {$6=2}} {print $0} ' \
-            $eig/$an.controls.ids $eig/$study.$an.genotypes.ld_pruned_renamed.fam >\
-            $eig/$study.$an.genotypes.ld_pruned_renamed_case_control.fam
-    done
-fi
 
 ## run eigenstrat ##
 for an in $anlist; do
-    if [ $case_control == "true" ]; then
-        famfile="$eig/$study.$an.genotypes.ld_pruned_renamed_case_control.fam"
-    else
-        famfile="$eig/$study.$an.genotypes.ld_pruned_renamed.fam"
-    fi
-    bimfile="$eig/$study.$an.genotypes.ld_pruned_renamed.bim"
-    bedfile="$eig/$study.$an.genotypes.ld_pruned.bed"
+    famfile="$eig/${study}_${an}_genotypes_ld_pruned_renamed.fam"
+    bimfile="$eig/${study}_${an}_genotypes_ld_pruned_renamed.bim"
+    bedfile="$eig/${study}_${an}_genotypes_ld_pruned.bed"
 
     /shared/bioinformatics/software/third_party/EIG-6.1.4/bin/smartpca.perl \
         -i $bedfile \
@@ -108,8 +88,8 @@ for an in $anlist; do
         -b $famfile \
         -o $eig/results/${an}_ld_pruned.pca \
         -p $eig/results/${an}_ld_pruned.plot \
-        -e $eig/results/${ancestry}_ld_pruned.eval \
-        -l $eig/results/${ancestry}_ld_pruned.pca.log \
+        -e $eig/results/${an}_ld_pruned.eval \
+        -l $eig/results/${an}_ld_pruned.pca.log \
         -m 0
 done
 
