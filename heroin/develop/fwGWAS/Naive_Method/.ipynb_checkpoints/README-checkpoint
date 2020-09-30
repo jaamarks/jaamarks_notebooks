@@ -1,0 +1,33 @@
+Author: Jesse Marks
+Date: September 11, 2018
+
+To run the Naive method in this directory:
+1. modify four variables in the methods file to specify 
+   the paths and names of GWAS results and processing dir.
+2. type the command <bash run-meth.sh> to run the methods file.
+	- the results current working directory should match
+	  the processing directory specified in the methods file.
+
+
+This directory contains 3 files: 
+* a methods file (_methods-fwgwas-naive-scz2-20180911.py)
+* a run methods file (run-meth.sh)
+* and a jupyter notebook detailing the methods file (fwGWAS-naive-method-20180911.ipynb)
+
+The methods file is a pipeline developed to run the
+naive method for fwGWAS. The pipeline is a python3 
+script that is automated to run the naive method,
+from start to finish, by simply modifying four 
+variables (paths, filenames). This script was written 
+with reusability in mind. Specifically, we have
+modularized the code into 7 functions that can be used
+as standalone functions.
+
+The run methods file is simply a short bash script to 
+submit the methods file pipeline to the job scheduler.
+Again note that the present working directory should be 
+same as the processing directory specified in the methods
+file.
+
+The jupyter notebook also contains the pipeline constituent
+functions, only with a bit more annotation and comments.
