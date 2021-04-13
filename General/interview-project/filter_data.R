@@ -19,6 +19,6 @@ if (is.null(opt$file)){
 
 
 df <- read.table(opt$file, header=TRUE)
-filtered_df <- df[which(rowMeans(df[, -1]) > 200), ] # remove probes with mean<200
+filtered_df <- df[which(rowMeans(df[, -1]) > 200), ] # remove probes with mean<=200
 
 write.table(filtered_df, file=opt$out,  quote=FALSE, sep="\t", row.names=FALSE)
