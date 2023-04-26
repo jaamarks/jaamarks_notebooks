@@ -104,3 +104,4 @@ ___
 ## `20230426_oud_stratified_ldsc_on_twas_meta.ipynb`
 Rerun the s-LDSC using a new gene-set list. In particular, a new TWAS meta-analysis was performed thus we will obtain a new set of significantly differentially expressed genes.
 - List of genes with a Benjamini-Hochberg FDR < 0.05
+- Meta-analysis results are located in this [GitHub comment](https://github.com/RTIInternational/bioinformatics/issues/183#issuecomment-1523806234). 
